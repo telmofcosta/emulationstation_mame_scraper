@@ -14,7 +14,13 @@ $stdout.puts "Step 1/3 first pass filter #{listxml_file} to #{listxml_filtered_f
 $stdout.puts "Step 2/3 parsing #{listxml_filtered_file}"
 parsed_games_data = XmlSimple.xml_in(listxml_filtered_file)['game']
 hashed_parsed_games_data = parsed_games_data.reduce({}) do |hash, game|
-  game_data = game.reduce({}) { |h, (attr, value)| h[attr] = value.is_a?(Array) ? value.first : value; h }
+  game_data = game.reduce({}) do |game_hash, (attr, value)|
+    game_hash[attr] = value.is_a?(Array) ? value.first : value
+    game_hash
+  end
+  if game_data["input"]
+    game_data["input"] = game_data["input"].select { |k, v| %w(players buttons).include?(k)} 
+  end
   hash[game["name"]] = game_data
   hash
 end; 0
