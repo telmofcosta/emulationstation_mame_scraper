@@ -23,7 +23,7 @@ games_data = Dir.glob(zip_files_pattern).sort.reduce({}) do |hash, game_zip_file
   image_file = File.join(snaps_dir, "#{rom_name}.png")
   image_file = nil unless File.file?(image_file)
 
-  hash.tap do |hash| 
+  unless %w(ismechanical isdevice isbios).map{ |type| parsed_game_data[type] }.any?
     hash[rom_name] = {
       :game_zip_file => game_zip_file,
       :name => rom_name,
@@ -33,14 +33,12 @@ games_data = Dir.glob(zip_files_pattern).sort.reduce({}) do |hash, game_zip_file
       :image => image_file
     }
   end
+  hash
 end
 
 puts '<?xml version="1.0"?>'
 puts "<gameList>"
 games_data.values.each do |game_data|
-  next if game_data["ismechanical"] == "yes"
-  next if game_data["isdevice"] == "yes"
-  next if game_data["isbios"] == "yes"
   puts "  <game>"
   puts "    <path>#{game_data[:game_zip_file]}</path>"
   puts "    <name>#{game_data[:description]}</name>" if game_data[:description]
