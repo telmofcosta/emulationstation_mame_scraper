@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'json'
+require_relative 'lib/data_parser'
 
 roms_dir = ARGV[0]
 snaps_dir = ARGV[1] || ARGV[0]
@@ -11,8 +12,9 @@ unless roms_dir
   exit 1
 end
 
-$stderr.puts "parsing file: #{games_data_file}."
-full_parsed_games_data = JSON.parse(File.read(games_data_file))
+data_parser = DataParser.new(games_data_file)
+data_parser.uncompress if data_parser.needs_uncompressing?
+full_parsed_games_data = data_parser.parse
 
 $stderr.puts "parsing games in: #{roms_dir}"
 zip_files_pattern = File.join(roms_dir, "*.zip")
