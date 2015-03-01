@@ -2,6 +2,7 @@
 
 require 'json'
 require_relative 'lib/data_parser'
+require_relative 'lib/games_parser'
 
 roms_dir = ARGV[0]
 snaps_dir = ARGV[1] || ARGV[0]
@@ -16,27 +17,8 @@ data_parser = DataParser.new(games_data_file)
 data_parser.uncompress if data_parser.needs_uncompressing?
 full_parsed_games_data = data_parser.parse
 
-$stderr.puts "parsing games in: #{roms_dir}"
-zip_files_pattern = File.join(roms_dir, "*.zip")
-games_data = Dir.glob(zip_files_pattern).sort.reduce({}) do |hash, game_zip_file|
-  # $stderr.puts game_zip_file
-  rom_name = File.basename(game_zip_file, ".zip")
-  parsed_game_data = full_parsed_games_data[rom_name] || {}
-  image_file = File.join(snaps_dir, "#{rom_name}.png")
-  image_file = nil unless File.file?(image_file)
-
-  unless %w(ismechanical isdevice isbios).map{ |type| parsed_game_data[type] }.any?
-    hash[rom_name] = {
-      :game_zip_file => game_zip_file,
-      :name => rom_name,
-      :description => parsed_game_data["description"],
-      :publisher => parsed_game_data["manufacturer"],
-      :releasedate => parsed_game_data["year"],
-      :image => image_file
-    }
-  end
-  hash
-end
+games_parser = GamesParser.new(full_parsed_games_data, roms_dir, snaps_dir)
+games_data = games_parser.parse
 
 puts '<?xml version="1.0"?>'
 puts "<gameList>"
